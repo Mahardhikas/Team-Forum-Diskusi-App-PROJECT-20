@@ -2,46 +2,89 @@ import fa from ''
 
 <template>
   <div class="login-container">
-    <div class="form-container">
-      <div class="form-header">
-        <h3 class="form-title">Halo Akun Baru!</h3>
-      </div>
-      
-      <div class="form-inputs">
-        <div class="input-grup">
-          <label for="Nama" class="input-label">Nama</label>
-          <div class="input-wrapper">
-            <font-awesome-icon :icon="['fas', 'user']" />
-            <input type="text" class="input-field" placeholder="Masukkan Nama"/>
-          </div>
+    <form @submit.prevent="register">
+      <div class="form-container">
+        <div class="form-header">
+          <h3 class="form-title">Halo Akun Baru!</h3>
         </div>
         
-        <div class="input-grup">
-          <label for="Email" class="input-label">Email</label>
-          <div class="input-wrapper">
-            <font-awesome-icon :icon="['fas', 'envelope']" />
-            <input type="password" class="input-field" placeholder="Masukkan Email"/>
+        <div class="form-inputs">
+          <div class="input-grup">
+            <label for="Nama" class="input-label">Nama</label>
+            <div class="input-wrapper">
+              <font-awesome-icon :icon="['fas', 'user']" />
+              <input type="text" class="input-field" placeholder="Masukkan Nama" v-model="username"/>
+            </div>
           </div>
-        </div>
+          
+          <div class="input-grup">
+            <label for="Email" class="input-label">Email</label>
+            <div class="input-wrapper">
+              <font-awesome-icon :icon="['fas', 'envelope']" />
+              <input type="text" class="input-field" placeholder="Masukkan Email" v-model="email"/>
+            </div>
+          </div>
 
-        <div class="input-grup">
-          <label for="password" class="input-label">Password</label>
-          <div class="input-wrapper">
-            <font-awesome-icon :icon="['fas', 'lock']" />
-            <input type="password" class="input-field" placeholder="Masukkan Password"/>
+          <div class="input-grup">
+            <label for="password" class="input-label">Password</label>
+            <div class="input-wrapper">
+              <font-awesome-icon :icon="['fas', 'lock']" />
+              <input type="password" class="input-field" placeholder="Masukkan Password" v-model="password"/>
+            </div>
           </div>
         </div>
+        <br/>
+        <button class="btn-login" type="submit" :disabled="loading">
+          <span v-if="loading">Registering...</span>
+          <span v-else>Register</span>
+        </button>
       </div>
-      <br/>
-      <button class="btn-login">Register</button>
-    </div>
+    </form>
   </div>
 </template>
 
 <script>
+import Api from '../services/Api';
+
 export default {
-  name: 'Register'
-}
+  data() {
+    return {
+      username: '',
+      email: '',
+      password: '',
+      loading: false,
+      error: ''
+    };
+  },
+  methods: {
+    async register() {
+      console.log('Register button clicked'); // Log untuk memastikan klik berfungsi
+      this.loading = true;
+      this.error = '';
+      try {
+        console.log('Sending request to backend'); // Log sebelum mengirim permintaan
+        const response = await Api.post('/register', {
+          username: this.username,
+          email: this.email,
+          password: this.password
+        });
+        console.log('Response received:', response.data); // Log respons dari backend
+        alert('Registration successful!');
+        this.$router.push('/login');
+      } catch (error) {
+        console.error('Error during registration:', error); // Log error untuk debugging
+        if (error.response && error.response.data.message === 'Email already used') {
+          alert('Email already used!');
+        } else {
+          alert('Registration failed!');
+        }
+        this.error = error.response ? error.response.data.message : 'Registration failed';
+      } finally {
+        this.loading = false;
+      }
+    }
+  }
+};
 </script>
 
 <style scoped>
