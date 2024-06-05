@@ -1,12 +1,12 @@
 <template>
-        <header>
+        <header class="header">
             <nav>
                 <a href="#" class="logo">DiscussionHub</a>
                 <ul class="nav-links">
                     <li><a href="#">Home</a></li>
                     <li><a href="#">About</a></li>
                     <li><a href="#">Contact</a></li>
-                    <li><a href="#">Login</a></li>
+                    <li><router-link to="/login">Login</router-link></li>
                 </ul>
             </nav>
         </header>
@@ -79,7 +79,7 @@ body {
 }
 
 
-header {
+.header {
   background-color: #4CAF50;
   padding: 20px 0;
 }
