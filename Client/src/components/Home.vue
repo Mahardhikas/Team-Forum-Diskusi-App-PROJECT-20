@@ -5,15 +5,15 @@
                 <img src="./img/cover-pic.png" alt="" width="100%">
                 <div class="sidebar-profile-info">
                     <img src="./img/user-1.png" alt="">
-                    <h1>Rayan</h1>
+                    <h1>{{ profile.name }}</h1>
                     <h3>Web developer</h3>
                     <ul>
-                        <li>Your Profil view<span>52</span></li>
-                        <li>Your Profil view<span>52</span></li>
-                        <li>Your Profil view<span>52</span></li>
+                        <li>Your Profile view<span>52</span></li>
+                        <li>Your Profile view<span>52</span></li>
+                        <li>Your Profile view<span>52</span></li>
                     </ul>
                 </div>
-                <div class="sidebar-pofile-link">
+                <div class="sidebar-profile-link">
                     <a href=""><img src="./img/items.png" alt=""> My Items</a>
                     <a href=""><img src="./img/premium.png" alt=""> Try Premium</a>
                 </div>
@@ -27,7 +27,7 @@
                 <a href=""><img src="./img/recent.png" />User Interface</a>
                 <a href=""><img src="./img/recent.png" />Online</a>
                 <a href=""><img src="./img/recent.png" />Learn online</a>
-                <a href=""><img src="./img/recent.png" />code </a>
+                <a href=""><img src="./img/recent.png" />code</a>
                 <a href=""><img src="./img/recent.png" />Web Developer</a>
                 <h3>Groups</h3>
                 <a href=""><img src="./img/group.png" />Groups Chat</a>
@@ -40,17 +40,15 @@
                     <textarea rows="2" placeholder="..."></textarea>
                 </div>
                 <div class="create-post-links">
-                        <button type="submit">
-                            <img src="./img/photo.png" />
-                        </button>
-
-                        <button type="submit">
-                            <img src="./img/photo.png" />
-                        </button>
-                        <button type="submit">
-                            <img src="./img/video.png" />
-                        </button>
-
+                    <button type="submit" @click="logout">
+                        <img src="./img/photo.png" />
+                    </button>
+                    <button type="submit">
+                        <img src="./img/photo.png" />
+                    </button>
+                    <button type="submit">
+                        <img src="./img/video.png" />
+                    </button>
                 </div>
             </div>
         </div>
@@ -58,54 +56,80 @@
             <div class="slidebar-news">
                 <img src="./img/setting.png" class="info-icon"/>
                 <h3>Trending</h3>
-
                 <a href="">#taqqqqqq</a>
-                <span>2000 penonton styory</span>
+                <span>2000 penonton story</span>
                 <a href="">#taqqqqqq</a>
-                <span>2000 penonton styory</span>
-
+                <span>2000 penonton story</span>
                 <a href="">#taqqqqqq</a>
-                <span>2000 penonton styory</span>
-
+                <span>2000 penonton story</span>
                 <a href="">#taqqqqqq</a>
-                <span>2000 penonton styory</span>
-
+                <span>2000 penonton story</span>
                 <a href="">#taqqqqqq</a>
-                <span>2000 penonton styory</span>
+                <span>2000 penonton story</span>
             </div>
         </div>
     </div>
 </template>
 
 <script>
-    export default {
-        data() {
-            return {
-                posts: [],
-                newPostText: '',
-                profile: {
-                    name: 'Rayan',
-                    role: 'Web developer',
-                    profileViews: 52
-                },
-                trendingTopics: ['#taqqqqqq', '#taqqqqqq', '#taqqqqqq', '#taqqqqqq', '#taqqqqqq']
-            };
+import jwtDecode from 'jwt-decode';
+import AuthenticationServices from '../services/AuthenticationServices';
+
+export default {
+    data() {
+        return {
+            posts: [],
+            newPostText: '',
+            profile: {
+                name: '',
+                role: 'Web developer',
+                profileViews: 52
+            },
+            trendingTopics: ['#taqqqqqq', '#taqqqqqq', '#taqqqqqq', '#taqqqqqq', '#taqqqqqq']
+        };
+    },
+    methods: {
+        addPost() {
+            if (this.newPostText.trim() !== '') {
+                this.posts.unshift({
+                    text: this.newPostText,
+                    author: this.profile.name,
+                    timestamp: new Date().toLocaleString()
+                });
+                this.newPostText = '';
+            }
         },
-        methods: {
-            addPost() {
-                if (this.newPostText.trim() !== '') {
-                    this.posts.unshift({
-                        text: this.newPostText,
-                        author: this.profile.name,
-                        timestamp: new Date().toLocaleString()
-                    });
-                    this.newPostText = '';
+        async logout() {
+            try {
+                await AuthenticationServices.logout();
+                localStorage.removeItem('token');
+                this.$router.push('/login');
+            } catch (error) {
+                console.error('Error during logout:', error);
+            }
+        },
+        getUserFromToken() {
+            const token = localStorage.getItem('token');
+            if (token) {
+                try {
+                    const decoded = jwtDecode(token);
+                    return decoded.username;
+                } catch (error) {
+                    console.error('Error decoding token:', error);
+                    return null;
                 }
             }
+            return null;
         }
-    };
+    },
+    mounted() {
+        const username = this.getUserFromToken();
+        if (username) {
+            this.profile.name = username;
+        }
+    }
+};
 </script>
-
 
 <style scoped>
     .container {

@@ -1,37 +1,35 @@
-var express = require('express');
-var bodyParser = require('body-parser');
-var cors = require('cors');
-var session = require('express-session');
-var flash = require('req-flash');
-var path = require('path');
-var logger = require('morgan');
-var createError = require('http-errors');
-var cookieParser = require('cookie-parser');
+// app.js (backend)
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const session = require('express-session');
+const flash = require('req-flash');
 
-// Routes
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-var sessionRouter = require('./routes/session');
-var loginRoutes = require('./routes/login');
-var registerRoutes = require('./routes/register');
-
-var app = express();
-
-console.log('Starting application'); // Log untuk memastikan aplikasi mulai
+// Routers
+const indexRouter = require('./routes/index');
+const usersRouter = require('./routes/users');
+const sessionRouter = require('./routes/session');
+const loginRoutes = require('./routes/login');
+const registerRoutes = require('./routes/register');
 
 // Middleware
+const verifyUser = require('./library/verify');
+
+const app = express();
+
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(bodyParser.json());
+
 app.use(cors({
-  origin: 'http://localhost:8082', // Sesuaikan dengan port frontend Anda
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  origin: 'http://localhost:8082', // Sesuaikan dengan URL frontend Anda
   credentials: true
 }));
-app.options('*', cors()); // Mengizinkan permintaan preflight dari semua rute
 
 app.use(session({
   secret: 'keydiscussionappsecret',
@@ -41,13 +39,29 @@ app.use(session({
 }));
 app.use(flash());
 
+// Serve static files from the Vue app
 app.use(express.static(path.join(__dirname, '..', 'client', 'dist')));
 
 // API routes
-app.use('/api', indexRouter);
+app.use('/', indexRouter);
 app.use('/api/users', usersRouter);
 app.use('/session', sessionRouter);
 app.use('/register', registerRoutes);
+app.use('/login', loginRoutes);
+
+// Protect the routes
+app.use('/home', verifyUser.isLogin, (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'client', 'dist', 'index.html'));
+});
+
+// Redirect /login to /home if user is logged in
+app.get('/login', verifyUser.isLogin, (req, res) => {
+    res.redirect('/home');
+});
+
+app.get('*', verifyUser.isLogout, (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'client', 'dist', 'index.html'));
+});
 
 // Catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -63,13 +77,9 @@ app.use(function(err, req, res, next) {
   res.json({ error: err.message });
 });
 
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'client', 'dist', 'index.html'));
-});
-
-var port = process.env.PORT || 8080;
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
+// Start the server
+app.listen(8081, () => {
+  console.log('Server is running on http://localhost:8081');
 });
 
 module.exports = app;

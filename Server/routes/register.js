@@ -1,10 +1,8 @@
-const router = require('express').Router();
+const express = require('express');
+const router = express.Router();
 const registerController = require('../controller/RegisterController');
 const verifyUser = require('../library/verify');
 
-router.post('/', verifyUser.isLogout, (req, res, next) => {
-    console.log('Register endpoint hit'); // Log untuk memastikan rute dipanggil
-    next();
-}, registerController.saveRegister);
+router.post('/', verifyUser.isLogout, registerController.saveRegister);
 
 module.exports = router;

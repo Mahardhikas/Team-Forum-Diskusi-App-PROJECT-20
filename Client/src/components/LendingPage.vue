@@ -3,10 +3,8 @@
             <nav>
                 <a href="#" class="logo">DiscussionHub</a>
                 <ul class="nav-links">
-                    <li><a href="#">Home</a></li>
-                    <li><a href="#">About</a></li>
-                    <li><a href="#">Contact</a></li>
-                    <li><router-link to="/login">Login</router-link></li>
+                  <router-link v-if="isLoggedIn" to="/login">Dashboard</router-link>
+                  <router-link v-else to="/login">Login</router-link>
                 </ul>
             </nav>
         </header>
@@ -61,9 +59,12 @@
 <script>
 
 export default {
-  name: 'LendingPage',
-  
-}
+  computed: {
+    isLoggedIn() {
+      return !!localStorage.getItem('token');
+    }
+  }
+};
 </script>
 
 <style>

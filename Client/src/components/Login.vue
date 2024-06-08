@@ -1,39 +1,84 @@
 <template>
   <div class="login-container">
-    <div class="form-container">
-      <div class="form-header">
-        <h3 class="form-title">Selamat Datang!</h3>
-        <p>Masukkan Email dan Password Anda.</p>
-      </div>
-      
-      <div class="form-inputs">
-        <div class="input-grup">
-          <label for="email" class="input-label">Email</label>
-          <div class="input-wrapper">
-            <font-awesome-icon :icon="['fas', 'envelope']" />
-            <input type="text" class="input-field" placeholder="Masukkan Email"/>
-          </div>
+    <form @submit.prevent="login">
+      <div class="form-container">
+        <div class="form-header">
+          <h3 class="form-title">Selamat Datang!</h3>
+          <p>Masukkan Email dan Password Anda.</p>
         </div>
         
-        <div class="input-grup">
-          <label for="password" class="input-label">Password</label>
-          <div class="input-wrapper">
-            <font-awesome-icon :icon="['fas', 'lock']" />
-            <input type="password" class="input-field" placeholder="Masukkan Password"/>
+        <div class="form-inputs">
+          <div class="input-grup">
+            <label for="email" class="input-label">Email</label>
+            <div class="input-wrapper">
+              <font-awesome-icon :icon="['fas', 'envelope']" />
+              <input type="text" class="input-field" placeholder="Masukkan Email" v-model="email"/>
+            </div>
           </div>
+          
+          <div class="input-grup">
+            <label for="password" class="input-label">Password</label>
+            <div class="input-wrapper">
+              <font-awesome-icon :icon="['fas', 'lock']" />
+              <input type="password" class="input-field" placeholder="Masukkan Password" v-model="password"/>
+            </div>
+          </div>
+        <p class="new">Akun Baru? <router-link to="/register">Daftar</router-link></p>
         </div>
-      <p class="new">Akun Baru? <router-link to="/register">Daftar</router-link></p>
+        <br/>
+        
+        <!-- Display error message if login fails -->
+        <div v-if="error" class="error-message">{{ error }}</div>
+
+        <button class="btn-login" type="submit" :disabled="loading">
+          <span v-if="loading">Logging in...</span>
+          <span v-else>Login</span>
+        </button>
       </div>
-      <br/>
-      <button class="btn-login">Login</button>
-    </div>
+    </form>
   </div>
 </template>
 
 <script>
+import Api from '../services/Api';
+
 export default {
-  name: 'Login'
-}
+  data() {
+    return {
+      email: '',
+      password: '',
+      loading: false,
+      error: ''
+    };
+  },
+  methods: {
+    async login() {
+      this.loading = true;
+      this.error = '';
+      try {
+        const response = await Api.post('/login', {
+          email: this.email,
+          password: this.password
+        });
+
+        if (response.status === 200) {
+          localStorage.setItem('token', response.data.token);
+          this.$router.push('/home');
+        } else {
+          this.error = 'Login failed! Invalid email or password.';
+        }
+      } catch (error) {
+        if (error.response && error.response.status === 400) {
+          this.error = 'Invalid email or password.';
+        } else {
+          this.error = 'Login failed! Please try again later.';
+        }
+      } finally {
+        this.loading = false;
+      }
+    }
+  }
+};
 </script>
 
 <style scoped>

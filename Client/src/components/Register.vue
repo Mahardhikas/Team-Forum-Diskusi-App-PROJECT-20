@@ -44,7 +44,7 @@ import fa from ''
 </template>
 
 <script>
-import Api from '../services/Api';
+import api from '../services/Api';
 
 export default {
   data() {
@@ -63,7 +63,7 @@ export default {
       this.error = '';
       try {
         console.log('Sending request to backend'); // Log sebelum mengirim permintaan
-        const response = await Api.post('/register', {
+        const response = await api.post('/register', {
           username: this.username,
           email: this.email,
           password: this.password

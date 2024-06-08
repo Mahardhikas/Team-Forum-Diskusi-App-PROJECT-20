@@ -1,11 +1,18 @@
 import axios from 'axios';
 
-const apiClient = axios.create({
-    baseURL: 'http://localhost:8081', // Sesuaikan dengan URL backend Anda
-    headers: {
-        'Content-Type': 'application/json'
-    },
-    withCredentials: true
+const api = axios.create({
+    baseURL: 'http://localhost:8081', // URL backend
+    withCredentials: true,
+    timeout: 10000,
 });
 
-export default apiClient;
+// Menambahkan interceptor untuk menyertakan token dalam setiap permintaan
+api.interceptors.request.use(config => {
+const token = localStorage.getItem('token');
+if (token) {
+    config.headers['Authorization'] = `Bearer ${token}`;
+}
+return config;
+});
+
+export default api;
